@@ -12,7 +12,7 @@ pub struct SqlxConfig {
 impl Default for SqlxConfig {
     fn default() -> Self {
         SqlxConfig {
-            schema: "https://github.com/dawsoncodes/sqlx/sqlx-cli/sqlx-config.schema.json"
+            schema: "https://raw.githubusercontent.com/Dawsoncodes/sqlx/main/sqlx-cli/sqlx-config.schema.json"
                 .to_string(),
             env_path: ".env".to_string(),
         }

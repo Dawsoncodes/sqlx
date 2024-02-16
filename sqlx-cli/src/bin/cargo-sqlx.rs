@@ -14,11 +14,12 @@ enum Cli {
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
-    let Cli::Sqlx(opt) = Cli::parse();
     SqlxConfig::read()
         .ok()
         .ok_or(anyhow::anyhow!("Error reading sqlx-config.file"))
         .unwrap();
+
+    let Cli::Sqlx(opt) = Cli::parse();
 
     if let Err(error) = sqlx_cli::run(opt).await {
         println!("{} {}", style("error:").bold().red(), error);

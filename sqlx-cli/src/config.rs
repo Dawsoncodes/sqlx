@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::fs::{self, File};
 
 /// Main struct for the sqlx-config.json
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,9 +31,7 @@ impl SqlxConfig {
                 // Create the file
                 let default = SqlxConfig::default();
 
-                let json = serde_json::to_string(&default)?;
-
-                fs::write("sqlx-config.json", json)?;
+                serde_json::to_writer_pretty(File::create("sqlx-config.json")?, &default)?;
 
                 Ok(default)
             }

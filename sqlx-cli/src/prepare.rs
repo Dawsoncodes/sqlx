@@ -348,7 +348,7 @@ fn load_json_file(path: impl AsRef<Path>) -> anyhow::Result<serde_json::Value> {
     Ok(serde_json::from_slice(&file_bytes)?)
 }
 
-async fn check_backend(opts: &mut ConnectOpts) -> anyhow::Result<()> {
+async fn check_backend(opts: &ConnectOpts) -> anyhow::Result<()> {
     crate::connect(opts).await?.close().await?;
     Ok(())
 }

@@ -71,7 +71,7 @@ impl SqlxConfig {
 
 /// If the `DATABASE_URL` was available in the `env_path` specified in the `sqlx-config.json` file,
 /// then it will be returned, otherwise it will check the command line option `--database-url`.
-pub fn get_database_url(connect_opts: &mut ConnectOpts) -> String {
+pub fn get_database_url(connect_opts: &ConnectOpts) -> String {
     let db_url_from_config = SqlxConfig::get_database_url();
 
     if let Some(db_url_from_config) = db_url_from_config {

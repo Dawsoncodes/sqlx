@@ -107,7 +107,7 @@ pub async fn run(opt: Opt) -> Result<()> {
 }
 
 /// Attempt to connect to the database server, retrying up to `ops.connect_timeout`.
-async fn connect(opts: &mut ConnectOpts) -> anyhow::Result<AnyConnection> {
+async fn connect(opts: &ConnectOpts) -> anyhow::Result<AnyConnection> {
     retry_connect_errors(opts, AnyConnection::connect).await
 }
 
@@ -116,7 +116,7 @@ async fn connect(opts: &mut ConnectOpts) -> anyhow::Result<AnyConnection> {
 ///
 /// The closure is passed `&ops.database_url` for easy composition.
 async fn retry_connect_errors<'a, F, Fut, T>(
-    opts: &'a mut ConnectOpts,
+    opts: &'a ConnectOpts,
     mut connect: F,
 ) -> anyhow::Result<T>
 where

@@ -47,7 +47,7 @@ hint: This command only works in the manifest directory of a Cargo package or wo
     );
 
     let metadata: Metadata = Metadata::from_current_directory(&cargo)?;
-    let ctx = PrepareCtx {
+    let mut ctx = PrepareCtx {
         workspace,
         cargo,
         cargo_args,
@@ -56,15 +56,15 @@ hint: This command only works in the manifest directory of a Cargo package or wo
     };
 
     if check {
-        prepare_check(&ctx).await
+        prepare_check(&mut ctx).await
     } else {
-        prepare(&ctx).await
+        prepare(&mut ctx).await
     }
 }
 
-async fn prepare(ctx: &PrepareCtx) -> anyhow::Result<()> {
+async fn prepare(ctx: &mut PrepareCtx) -> anyhow::Result<()> {
     if ctx.connect_opts.database_url.is_some() {
-        check_backend(&ctx.connect_opts).await?;
+        check_backend(&mut ctx.connect_opts).await?;
     }
 
     let prepare_dir = ctx.prepare_dir()?;
@@ -90,9 +90,9 @@ async fn prepare(ctx: &PrepareCtx) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn prepare_check(ctx: &PrepareCtx) -> anyhow::Result<()> {
+async fn prepare_check(ctx: &mut PrepareCtx) -> anyhow::Result<()> {
     if ctx.connect_opts.database_url.is_some() {
-        check_backend(&ctx.connect_opts).await?;
+        check_backend(&mut ctx.connect_opts).await?;
     }
 
     // Re-generate and store the queries in a separate directory from both the prepared
@@ -348,7 +348,7 @@ fn load_json_file(path: impl AsRef<Path>) -> anyhow::Result<serde_json::Value> {
     Ok(serde_json::from_slice(&file_bytes)?)
 }
 
-async fn check_backend(opts: &ConnectOpts) -> anyhow::Result<()> {
+async fn check_backend(opts: &mut ConnectOpts) -> anyhow::Result<()> {
     crate::connect(opts).await?.close().await?;
     Ok(())
 }

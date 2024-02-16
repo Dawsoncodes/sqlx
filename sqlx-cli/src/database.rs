@@ -5,7 +5,7 @@ use promptly::{prompt, ReadlineError};
 use sqlx::any::Any;
 use sqlx::migrate::MigrateDatabase;
 
-pub async fn create(connect_opts: &ConnectOpts) -> anyhow::Result<()> {
+pub async fn create(connect_opts: &mut ConnectOpts) -> anyhow::Result<()> {
     // NOTE: only retry the idempotent action.
     // We're assuming that if this succeeds, then any following operations should also succeed.
     let exists = crate::retry_connect_errors(connect_opts, Any::database_exists).await?;
@@ -23,7 +23,11 @@ pub async fn create(connect_opts: &ConnectOpts) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn drop(connect_opts: &ConnectOpts, confirm: bool, force: bool) -> anyhow::Result<()> {
+pub async fn drop(
+    connect_opts: &mut ConnectOpts,
+    confirm: bool,
+    force: bool,
+) -> anyhow::Result<()> {
     if confirm && !ask_to_continue_drop(connect_opts.required_db_url()?) {
         return Ok(());
     }
@@ -45,7 +49,7 @@ pub async fn drop(connect_opts: &ConnectOpts, confirm: bool, force: bool) -> any
 
 pub async fn reset(
     migration_source: &str,
-    connect_opts: &ConnectOpts,
+    connect_opts: &mut ConnectOpts,
     confirm: bool,
     force: bool,
 ) -> anyhow::Result<()> {
@@ -53,7 +57,7 @@ pub async fn reset(
     setup(migration_source, connect_opts).await
 }
 
-pub async fn setup(migration_source: &str, connect_opts: &ConnectOpts) -> anyhow::Result<()> {
+pub async fn setup(migration_source: &str, connect_opts: &mut ConnectOpts) -> anyhow::Result<()> {
     create(connect_opts).await?;
     migrate::run(migration_source, connect_opts, false, false, None).await
 }

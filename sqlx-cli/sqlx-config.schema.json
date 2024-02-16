@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "env_path": {
+            "type": "string",
+            "description": "Path to the .env file",
+            "default": ".env",
+            "examples": ["../.env", "../myapp/.env"]
+        }
+    },
+    "required": ["database_url"]
+}

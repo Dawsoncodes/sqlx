@@ -265,7 +265,7 @@ pub struct ConnectOpts {
 impl ConnectOpts {
     /// Require a database URL to be provided, otherwise
     /// return an error.
-    pub fn required_db_url(&mut self) -> anyhow::Result<&str> {
+    pub fn required_db_url(&self) -> anyhow::Result<&str> {
         if self.env_path.is_some() {
             dotenvy::from_filename(&self.env_path.as_deref().unwrap()).ok();
 

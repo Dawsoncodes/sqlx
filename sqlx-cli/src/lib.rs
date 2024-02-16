@@ -14,11 +14,13 @@ mod metadata;
 // mod migrator;
 #[cfg(feature = "completions")]
 mod completions;
+mod config;
 mod migrate;
 mod opt;
 mod prepare;
 
 pub use crate::opt::Opt;
+pub use config::SqlxConfig;
 
 pub async fn run(opt: Opt) -> Result<()> {
     match opt.command {
@@ -70,22 +72,24 @@ pub async fn run(opt: Opt) -> Result<()> {
         },
 
         Command::Database(database) => match database.command {
-            DatabaseCommand::Create { connect_opts } => database::create(&connect_opts).await?,
+            DatabaseCommand::Create { mut connect_opts } => {
+                database::create(&mut connect_opts).await?
+            }
             DatabaseCommand::Drop {
                 confirmation,
-                connect_opts,
+                mut connect_opts,
                 force,
-            } => database::drop(&connect_opts, !confirmation.yes, force).await?,
+            } => database::drop(&mut connect_opts, !confirmation.yes, force).await?,
             DatabaseCommand::Reset {
                 confirmation,
                 source,
-                connect_opts,
+                mut connect_opts,
                 force,
-            } => database::reset(&source, &connect_opts, !confirmation.yes, force).await?,
+            } => database::reset(&source, &mut connect_opts, !confirmation.yes, force).await?,
             DatabaseCommand::Setup {
                 source,
-                connect_opts,
-            } => database::setup(&source, &connect_opts).await?,
+                mut connect_opts,
+            } => database::setup(&source, &mut connect_opts).await?,
         },
 
         Command::Prepare {
@@ -103,7 +107,7 @@ pub async fn run(opt: Opt) -> Result<()> {
 }
 
 /// Attempt to connect to the database server, retrying up to `ops.connect_timeout`.
-async fn connect(opts: &ConnectOpts) -> anyhow::Result<AnyConnection> {
+async fn connect(opts: &mut ConnectOpts) -> anyhow::Result<AnyConnection> {
     retry_connect_errors(opts, AnyConnection::connect).await
 }
 
@@ -116,19 +120,19 @@ async fn retry_connect_errors<'a, F, Fut, T>(
     mut connect: F,
 ) -> anyhow::Result<T>
 where
-    F: FnMut(&'a str) -> Fut,
+    F: FnMut(&str) -> Fut,
     Fut: Future<Output = sqlx::Result<T>> + 'a,
 {
     sqlx::any::install_default_drivers();
 
-    let db_url = opts.required_db_url()?;
+    let db_url = opts.required_db_url()?.to_string();
 
     backoff::future::retry(
         backoff::ExponentialBackoffBuilder::new()
             .with_max_elapsed_time(Some(Duration::from_secs(opts.connect_timeout)))
             .build(),
         || {
-            connect(db_url).map_err(|e| -> backoff::Error<anyhow::Error> {
+            connect(&db_url).map_err(|e| -> backoff::Error<anyhow::Error> {
                 match e {
                     sqlx::Error::Io(ref ioe) => match ioe.kind() {
                         io::ErrorKind::ConnectionRefused

@@ -246,6 +246,9 @@ pub struct ConnectOpts {
     #[clap(long, default_value = "10")]
     pub connect_timeout: u64,
 
+    #[clap(long, default_value = ".env")]
+    pub env_path: Option<String>,
+
     /// Set whether or not to create SQLite databases in Write-Ahead Log (WAL) mode:
     /// https://www.sqlite.org/wal.html
     ///
@@ -262,7 +265,15 @@ pub struct ConnectOpts {
 impl ConnectOpts {
     /// Require a database URL to be provided, otherwise
     /// return an error.
-    pub fn required_db_url(&self) -> anyhow::Result<&str> {
+    pub fn required_db_url(&mut self) -> anyhow::Result<&str> {
+        if self.env_path.is_some() {
+            dotenvy::from_filename(&self.env_path.as_deref().unwrap()).ok();
+
+            let url = dotenvy::var("DATABASE_URL").ok();
+
+            self.database_url = url;
+        }
+
         self.database_url.as_deref().ok_or_else(
             || anyhow::anyhow!(
                 "the `--database-url` option the or `DATABASE_URL` environment variable must be provided"

@@ -4,12 +4,16 @@ use std::fs;
 /// Main struct for the sqlx-config.json
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SqlxConfig {
+    #[serde(rename = "$schema")]
+    pub schema: String,
     pub env_path: String,
 }
 
 impl Default for SqlxConfig {
     fn default() -> Self {
         SqlxConfig {
+            schema: "https://github.com/dawsoncodes/sqlx/sqlx-cli/sqlx-config.schema.json"
+                .to_string(),
             env_path: ".env".to_string(),
         }
     }
@@ -23,7 +27,7 @@ impl SqlxConfig {
                 let config: SqlxConfig = serde_json::from_str(&f).unwrap();
                 Ok(config)
             }
-            Err(e) => {
+            Err(_) => {
                 // Create the file
                 let default = SqlxConfig::default();
 
@@ -31,7 +35,7 @@ impl SqlxConfig {
 
                 fs::write("sqlx-config.json", json)?;
 
-                Ok(SqlxConfig::default())
+                Ok(default)
             }
         }
     }

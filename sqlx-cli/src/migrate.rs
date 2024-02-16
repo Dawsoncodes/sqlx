@@ -180,9 +180,9 @@ fn short_checksum(checksum: &[u8]) -> String {
     s
 }
 
-pub async fn info(migration_source: &str, connect_opts: &ConnectOpts) -> anyhow::Result<()> {
+pub async fn info(migration_source: &str, connect_opts: &mut ConnectOpts) -> anyhow::Result<()> {
     let migrator = Migrator::new(Path::new(migration_source)).await?;
-    let mut conn = crate::connect(&connect_opts).await?;
+    let mut conn = crate::connect(connect_opts).await?;
 
     conn.ensure_migrations_table().await?;
 
@@ -261,7 +261,7 @@ fn validate_applied_migrations(
 
 pub async fn run(
     migration_source: &str,
-    connect_opts: &ConnectOpts,
+    connect_opts: &mut ConnectOpts,
     dry_run: bool,
     ignore_missing: bool,
     target_version: Option<i64>,
@@ -356,7 +356,7 @@ pub async fn run(
 
 pub async fn revert(
     migration_source: &str,
-    connect_opts: &ConnectOpts,
+    connect_opts: &mut ConnectOpts,
     dry_run: bool,
     ignore_missing: bool,
     target_version: Option<i64>,
@@ -368,7 +368,7 @@ pub async fn revert(
         }
     }
 
-    let mut conn = crate::connect(&connect_opts).await?;
+    let mut conn = crate::connect(connect_opts).await?;
 
     conn.ensure_migrations_table().await?;
 

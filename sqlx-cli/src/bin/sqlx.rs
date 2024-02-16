@@ -1,6 +1,6 @@
 use clap::Parser;
 use console::style;
-use sqlx_cli::{config::SqlxConfig, Opt};
+use sqlx_cli::{Opt, SqlxConfig};
 
 #[tokio::main]
 async fn main() {

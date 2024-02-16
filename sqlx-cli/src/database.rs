@@ -1,3 +1,4 @@
+use crate::config::get_database_url;
 use crate::migrate;
 use crate::opt::ConnectOpts;
 use console::style;
@@ -17,7 +18,9 @@ pub async fn create(connect_opts: &mut ConnectOpts) -> anyhow::Result<()> {
             std::sync::atomic::Ordering::Release,
         );
 
-        Any::create_database(connect_opts.required_db_url()?).await?;
+        let database_url = get_database_url(connect_opts);
+
+        Any::create_database(&database_url).await?;
     }
 
     Ok(())
@@ -28,7 +31,9 @@ pub async fn drop(
     confirm: bool,
     force: bool,
 ) -> anyhow::Result<()> {
-    if confirm && !ask_to_continue_drop(connect_opts.required_db_url()?) {
+    let database_url = get_database_url(connect_opts);
+
+    if confirm && !ask_to_continue_drop(&database_url) {
         return Ok(());
     }
 
@@ -37,10 +42,12 @@ pub async fn drop(
     let exists = crate::retry_connect_errors(connect_opts, Any::database_exists).await?;
 
     if exists {
+        let database_url = get_database_url(connect_opts);
+
         if force {
-            Any::force_drop_database(connect_opts.required_db_url()?).await?;
+            Any::force_drop_database(&database_url).await?;
         } else {
-            Any::drop_database(connect_opts.required_db_url()?).await?;
+            Any::drop_database(&database_url).await?;
         }
     }
 

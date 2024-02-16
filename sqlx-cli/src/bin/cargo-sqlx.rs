@@ -1,6 +1,6 @@
 use clap::Parser;
 use console::style;
-use sqlx_cli::Opt;
+use sqlx_cli::{Opt, SqlxConfig};
 use std::process;
 
 // cargo invokes this binary as `cargo-sqlx sqlx <args>`
@@ -15,6 +15,10 @@ enum Cli {
 async fn main() {
     dotenvy::dotenv().ok();
     let Cli::Sqlx(opt) = Cli::parse();
+    SqlxConfig::read()
+        .ok()
+        .ok_or(anyhow::anyhow!("Error reading sqlx-config.file"))
+        .unwrap();
 
     if let Err(error) = sqlx_cli::run(opt).await {
         println!("{} {}", style("error:").bold().red(), error);

@@ -4,10 +4,9 @@
     "properties": {
         "env_path": {
             "type": "string",
-            "description": "Path to the .env file",
+            "description": "Path to the .env file, this ignores the --database-url option when the command is run. If not provided, the .env file in the current directory is used if it exists, otherwise it gets the database url from the command line option \"--database-url.\"",
             "default": ".env",
             "examples": ["../.env", "../myapp/.env"]
         }
-    },
-    "required": ["database_url"]
+    }
 }

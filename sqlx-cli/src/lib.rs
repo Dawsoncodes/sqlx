@@ -36,12 +36,12 @@ pub async fn run(opt: Opt) -> Result<()> {
                 source,
                 dry_run,
                 ignore_missing,
-                connect_opts,
+                mut connect_opts,
                 target_version,
             } => {
                 migrate::run(
                     &source,
-                    &connect_opts,
+                    &mut connect_opts,
                     dry_run,
                     *ignore_missing,
                     target_version,
@@ -52,12 +52,12 @@ pub async fn run(opt: Opt) -> Result<()> {
                 source,
                 dry_run,
                 ignore_missing,
-                connect_opts,
+                mut connect_opts,
                 target_version,
             } => {
                 migrate::revert(
                     &source,
-                    &connect_opts,
+                    &mut connect_opts,
                     dry_run,
                     *ignore_missing,
                     target_version,
@@ -66,8 +66,8 @@ pub async fn run(opt: Opt) -> Result<()> {
             }
             MigrateCommand::Info {
                 source,
-                connect_opts,
-            } => migrate::info(&source, &connect_opts).await?,
+                mut connect_opts,
+            } => migrate::info(&source, &mut connect_opts).await?,
             MigrateCommand::BuildScript { source, force } => migrate::build_script(&source, force)?,
         },
 
@@ -125,11 +125,13 @@ where
 {
     sqlx::any::install_default_drivers();
 
-    let db_url = opts.required_db_url()?.to_string();
+    let opts_clone = opts.clone();
+
+    let db_url = opts.required_db_url()?;
 
     backoff::future::retry(
         backoff::ExponentialBackoffBuilder::new()
-            .with_max_elapsed_time(Some(Duration::from_secs(opts.connect_timeout)))
+            .with_max_elapsed_time(Some(Duration::from_secs(opts_clone.connect_timeout)))
             .build(),
         || {
             connect(&db_url).map_err(|e| -> backoff::Error<anyhow::Error> {

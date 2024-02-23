@@ -235,7 +235,7 @@ impl Deref for Source {
 }
 
 /// Argument for the database URL.
-#[derive(Args, Debug)]
+#[derive(Args, Debug, Clone)]
 pub struct ConnectOpts {
     /// Location of the DB, by default will be read from the DATABASE_URL env var or `.env` files.
     #[clap(long, short = 'D', env)]

@@ -182,7 +182,7 @@ fn short_checksum(checksum: &[u8]) -> String {
 
 pub async fn info(migration_source: &str, connect_opts: &ConnectOpts) -> anyhow::Result<()> {
     let migrator = Migrator::new(Path::new(migration_source)).await?;
-    let mut conn = crate::connect(&connect_opts).await?;
+    let mut conn = crate::connect(connect_opts).await?;
 
     conn.ensure_migrations_table().await?;
 
@@ -368,7 +368,7 @@ pub async fn revert(
         }
     }
 
-    let mut conn = crate::connect(&connect_opts).await?;
+    let mut conn = crate::connect(connect_opts).await?;
 
     conn.ensure_migrations_table().await?;
 
